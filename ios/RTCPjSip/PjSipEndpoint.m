@@ -353,6 +353,13 @@
 }
 
 - (NSMutableDictionary *) getCodecs {
+
+    // 활성화 코덱 설정 PJMEDIA_CODEC_PRIO_NORMAL
+    NSDictionary *codecSettings = @{
+        @"PCMA/8000/1": @128,  
+        @"PCMU/8000/1": @128,  
+    };
+    
     //32 max possible codecs
     pjsua_codec_info codec[32];
     NSMutableDictionary *codecs = [[NSMutableDictionary alloc] initWithCapacity:32];
@@ -360,10 +367,23 @@
     
     if (pjsua_enum_codecs(codec, &uCount) == PJ_SUCCESS) {
         for (unsigned i = 0; i < uCount; ++i) {
+            const char *codec_id = codec[i].codec_id.ptr;
             NSString * codecName = [NSString stringWithFormat:@"%s", codec[i].codec_id.ptr];
-            [codecs setObject:[NSNumber numberWithInt: codec[i].priority] forKey: codecName];
+            
+            // 나머지 코덱 비활성화 설정
+            if (![codecSettings objectForKey:codecName]) {
+                codecSettings = [codecSettings mutableCopy];
+                [(NSMutableDictionary *)codecSettings setObject:@0 forKey:codecName];
+            }else {
+                [codecs setObject:[NSNumber numberWithInt: codec[i].priority] forKey: codecName];
+            }
         }
+    } else {
+        NSLog(@"Failed to enumerate codecs");
     }
+    
+    // 코덱 설정 변경
+    [self changeCodecSettings:codecSettings];
     return codecs;
 }
 
