@@ -356,7 +356,6 @@
 
     // 활성화 코덱 설정 PJMEDIA_CODEC_PRIO_NORMAL
     NSDictionary *codecSettings = @{
-        @"PCMA/8000/1": @128,  
         @"PCMU/8000/1": @128,  
     };
     
